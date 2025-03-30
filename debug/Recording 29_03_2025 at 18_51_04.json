@@ -1,0 +1,246 @@
+{
+    "title": "Recording 29/03/2025 at 18:51:04",
+    "steps": [
+        {
+            "type": "setViewport",
+            "width": 1078,
+            "height": 911,
+            "deviceScaleFactor": 1,
+            "isMobile": false,
+            "hasTouch": false,
+            "isLandscape": false
+        },
+        {
+            "type": "navigate",
+            "url": "http://localhost:5173/",
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://localhost:5173/",
+                    "title": "Vite + React + TS"
+                }
+            ]
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Se connecter"
+                ],
+                [
+                    "div:nth-of-type(2) > button"
+                ],
+                [
+                    "xpath///*[@id=\"root\"]/div/div/form/div[2]/button"
+                ],
+                [
+                    "pierce/div:nth-of-type(2) > button"
+                ],
+                [
+                    "text/Se connecter"
+                ]
+            ],
+            "offsetY": 24,
+            "offsetX": 246
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Add Word"
+                ],
+                [
+                    "a:nth-of-type(2)"
+                ],
+                [
+                    "xpath///*[@id=\"root\"]/div/nav/div/div/div[1]/div[2]/a[2]"
+                ],
+                [
+                    "pierce/a:nth-of-type(2)"
+                ],
+                [
+                    "text/Add Word"
+                ]
+            ],
+            "offsetY": 23,
+            "offsetX": 66.53125
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Annuler"
+                ],
+                [
+                    "main button.border"
+                ],
+                [
+                    "xpath///*[@id=\"root\"]/div/main/div/form/div[2]/button[1]"
+                ],
+                [
+                    "pierce/main button.border"
+                ],
+                [
+                    "text/Annuler"
+                ]
+            ],
+            "offsetY": 21,
+            "offsetX": 36.28125
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Dashboard"
+                ],
+                [
+                    "a:nth-of-type(1)"
+                ],
+                [
+                    "xpath///*[@id=\"root\"]/div/nav/div/div/div[1]/div[2]/a[1]"
+                ],
+                [
+                    "pierce/a:nth-of-type(1)"
+                ],
+                [
+                    "text/Dashboard"
+                ]
+            ],
+            "offsetY": 41,
+            "offsetX": 81.5
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Dashboard"
+                ],
+                [
+                    "a:nth-of-type(1)"
+                ],
+                [
+                    "xpath///*[@id=\"root\"]/div/nav/div/div/div[1]/div[2]/a[1]"
+                ],
+                [
+                    "pierce/a:nth-of-type(1)"
+                ],
+                [
+                    "text/Dashboard"
+                ]
+            ],
+            "offsetY": 44,
+            "offsetX": 78.5
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Dashboard"
+                ],
+                [
+                    "a:nth-of-type(1)"
+                ],
+                [
+                    "xpath///*[@id=\"root\"]/div/nav/div/div/div[1]/div[2]/a[1]"
+                ],
+                [
+                    "pierce/a:nth-of-type(1)"
+                ],
+                [
+                    "text/Dashboard"
+                ]
+            ],
+            "offsetY": 34,
+            "offsetX": 70.5
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Practice[role=\"link\"]"
+                ],
+                [
+                    "a:nth-of-type(4)"
+                ],
+                [
+                    "xpath///*[@id=\"root\"]/div/nav/div/div/div[1]/div[2]/a[4]"
+                ],
+                [
+                    "pierce/a:nth-of-type(4)"
+                ]
+            ],
+            "offsetY": 34,
+            "offsetX": 44.921875
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Commencer"
+                ],
+                [
+                    "main button"
+                ],
+                [
+                    "xpath///*[@id=\"root\"]/div/main/div/div[2]/div/div[2]/button"
+                ],
+                [
+                    "pierce/main button"
+                ],
+                [
+                    "text/Commencer"
+                ]
+            ],
+            "offsetY": 22,
+            "offsetX": 156
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "main > div > div"
+                ],
+                [
+                    "xpath///*[@id=\"root\"]/div/main/div/div"
+                ],
+                [
+                    "pierce/main > div > div"
+                ]
+            ],
+            "offsetY": 179,
+            "offsetX": 318
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Commencer le jeu"
+                ],
+                [
+                    "main > div > div > button"
+                ],
+                [
+                    "xpath///*[@id=\"root\"]/div/main/div/div/button"
+                ],
+                [
+                    "pierce/main > div > div > button"
+                ],
+                [
+                    "text/Commencer le"
+                ]
+            ],
+            "offsetY": 15,
+            "offsetX": 75.953125
+        }
+    ]
+}
