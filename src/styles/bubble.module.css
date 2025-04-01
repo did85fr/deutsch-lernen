@@ -1,0 +1,8 @@
+.hoverText {
+  transition: 0.35s font-weight;
+  color: rgb(var(--color-value));
+}
+
+.hoverText:hover {
+  font-weight: 900;
+}

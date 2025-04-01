@@ -49,10 +49,47 @@ PROBLÈMES EN COURS :
    - Tentatives de configuration via CLI échouées
    - Besoin de solution alternative pour le déploiement
 
+ÉTAT ACTUEL DU DÉVELOPPEMENT (dernière mise à jour) :
+
+1. Configuration de Développement
+   - Terminal 1 (API): vercel dev --listen 3000
+   - Terminal 2 (Frontend): npm run dev
+   - Frontend accessible sur: http://localhost:5173
+   - API accessible sur: http://localhost:3000/api/dictionary
+
+2. Points de Test
+   - L'API dictionnaire est en cours de débogage
+   - CORS configuré mais nécessite des ajustements
+   - Test direct API: http://localhost:3000/api/dictionary?q=haus&language=deen
+   - Test via Frontend: http://localhost:5173 (utiliser l'interface)
+
+3. Pour Reprendre le Développement
+   Étapes de lancement :
+   a) Ouvrir deux terminaux
+   b) Dans le premier :
+      ```
+      cd [chemin-du-projet]
+      vercel dev --listen 3000
+      ```
+   c) Dans le second :
+      ```
+      cd [chemin-du-projet]
+      npm run dev
+      ```
+
+4. Avant de Quitter
+   Pour sauvegarder sur GitHub :
+   ```
+   git add .
+   git commit -m "WIP: CORS configuration and API debugging in progress"
+   git push origin main
+   ```
+
 PROCHAINES ÉTAPES :
-1. Vérifier le déploiement avec la nouvelle configuration
-2. Révoquer et régénérer les tokens exposés
-3. Tester l'intégration du dictionnaire PONS
+1. Déboguer la communication Frontend-API
+2. Vérifier les réponses de l'API sur http://localhost:3000/api/dictionary
+3. Finaliser la configuration CORS
+4. Tester l'intégration complète Frontend-API
 
 Structure du projet
 1. Configuration racine
@@ -148,4 +185,5 @@ FORMATION :
 4. Notes sur les Avertissements Courants
    - CRLF vs LF : Différences de fins de ligne entre Windows (CRLF) et Unix (LF)
    - Pas d'impact sur le code, peut être ignoré en développement
+
 

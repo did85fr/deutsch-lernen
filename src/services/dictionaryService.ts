@@ -21,11 +21,18 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
 const wordCache = new Map<string, { result: any; timestamp: number }>();
 
 // Configuration de l'API
+const API_BASE_URL = import.meta.env.DEV 
+  ? 'http://localhost:3000/api/dictionary'  // URL locale
+  : 'https://deutsch-lernen-omega.vercel.app/api/dictionary'; // URL production
+
 const api = rateLimit(axios.create({
-  baseURL: 'https://deutsch-lernen-omega.vercel.app/api/dictionary',  // URL mise à jour
+  baseURL: API_BASE_URL,
   headers: {
-    'X-Secret': import.meta.env.VITE_PONS_API_KEY
-  }
+    'X-Secret': import.meta.env.VITE_PONS_API_KEY,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  withCredentials: false
 }), {
   maxRequests: 10,
   perMilliseconds: 1000,
@@ -49,6 +56,9 @@ interface PonsResponse {
 
 async function checkWithPonsAPI(word: string) {
   console.log('Attempting PONS API call with key:', import.meta.env.VITE_PONS_API_KEY);
+  console.log('API Base URL:', API_BASE_URL);
+  console.log('Full request URL:', `${API_BASE_URL}?q=${word}&language=deen`);
+  
   try {
     const response = await api.get('', {
       params: { 
@@ -57,8 +67,11 @@ async function checkWithPonsAPI(word: string) {
       }
     });
 
-    console.log('PONS API Raw Response:', response);
-    console.log('PONS API Response Data:', response.data);
+    console.log('PONS API Response:', {
+      status: response.status,
+      headers: response.headers,
+      data: response.data
+    });
 
     if (!response.data.exists || !response.data.matches) {
       console.log('No matches found, falling back to local check');
@@ -70,7 +83,14 @@ async function checkWithPonsAPI(word: string) {
       suggestions: parsePonsResponse(response.data.matches)
     };
   } catch (error) {
-    console.error('PONS API Detailed Error:', error);
+    console.error('PONS API Error Details:', {
+      error,
+      isAxiosError: axios.isAxiosError(error),
+      response: error.response,
+      request: error.request,
+      config: error.config
+    });
+    
     return checkWithLocalFallback(word);
   }
 }
@@ -211,32 +231,6 @@ export function findSimilarWords(word: string, entries: VocabularyEntry[]) {
     entry.german.toLowerCase().trim() === normalizedWord
   );
 } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

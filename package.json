@@ -8,7 +8,8 @@
     "build": "vite build",
     "vercel-build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "api": "vercel dev --listen 3000"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.7",
@@ -43,5 +44,6 @@
     "vite": "^5.1.4"
   }
 }
+
 
 

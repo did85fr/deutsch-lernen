@@ -1,24 +1,29 @@
 {
-  "buildCommand": "vite build",
-  "devCommand": "vite dev",
-  "framework": "vite",
-  "headers": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Credentials", "value": "true" },
-        { "key": "Access-Control-Allow-Origin", "value": "https://deutsch-lernen-omega.vercel.app" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
-        { "key": "Access-Control-Allow-Headers", "value": "X-Secret, Content-Type, Authorization, X-Requested-With" }
-      ]
+      "src": "api/**/*.ts",
+      "use": "@vercel/node"
     }
   ],
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" }
-  ]
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1",
+      "headers": {
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,OPTIONS,POST,PUT,DELETE",
+        "Access-Control-Allow-Headers": "*"
+      }
+    }
+  ],
+  "framework": null,
+  "buildCommand": null,
+  "devCommand": null,
+  "installCommand": null,
+  "ignoreCommand": null
 }
-
-
 
 
 

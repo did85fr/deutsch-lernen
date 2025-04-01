@@ -1,0 +1,5 @@
+@layer components {
+  .nav-item-active {
+    @apply relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-indigo-600;
+  }
+}
