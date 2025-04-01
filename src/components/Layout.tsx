@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { Book, Plus, List, Brain, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useVocabularyStore } from '../lib/store';
+import { VersionInfo } from './VersionInfo';
 
 // Définition des éléments de navigation
 const navigation = [
@@ -99,6 +100,7 @@ export function Layout({ children }: LayoutProps) {
       </nav>
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <VersionInfo />
         <Outlet />
       </main>
 
@@ -113,6 +115,8 @@ export function Layout({ children }: LayoutProps) {
     </div>
   );
 }
+
+
 
 
 

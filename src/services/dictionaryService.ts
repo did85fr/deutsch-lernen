@@ -22,7 +22,7 @@ const wordCache = new Map<string, { result: any; timestamp: number }>();
 
 // Configuration de l'API
 const api = rateLimit(axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://german-vocab-app.vercel.app/api/dictionary',
+  baseURL: 'https://deutsch-lernen-omega.vercel.app/api/dictionary',  // URL mise à jour
   headers: {
     'X-Secret': import.meta.env.VITE_PONS_API_KEY
   }
@@ -211,6 +211,10 @@ export function findSimilarWords(word: string, entries: VocabularyEntry[]) {
     entry.german.toLowerCase().trim() === normalizedWord
   );
 } 
+
+
+
+
 
 
 

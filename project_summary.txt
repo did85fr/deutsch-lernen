@@ -1,0 +1,151 @@
+GERMAN VOCABULARY APP - RÉSUMÉ DU PROJET
+
+ARCHITECTURE :
+- Frontend: React + Vite + TypeScript
+- Backend: Supabase
+- Déploiement: Vercel (problèmes non résolus avec les variables d'environnement)
+- Style: Tailwind CSS
+
+FONCTIONNALITÉS PRINCIPALES :
+1. Gestion du vocabulaire
+   - Ajout/édition/suppression de mots
+   - Support pour les traductions multiples
+   - Système de tags et listes
+
+2. Système d'apprentissage
+   - Jeu de mémoire
+   - Système de révision espacée (SM2)
+   - Suivi de la progression
+
+3. Authentification
+   - Login/Logout via Supabase
+   - Debug mode en développement
+
+MODIFICATIONS MAJEURES :
+1. Structure de données
+   - Migration vers format JSON pour les traductions
+   - Support métadonnées (contexte, tags, listes)
+
+2. Debugging
+   - Ajout AuthLogger
+   - Interface de debug en mode DEV
+
+3. Sécurité
+   - Nettoyage des tokens exposés dans .env.example
+   - Migration des variables sensibles vers .env.local
+   - Configuration sécurisée de Vercel
+
+4. Correction CORS
+   - Configuration des headers CORS dans l'API
+   - Adaptation de l'URL de l'API pour le développement
+   - Configuration CORS dans vercel.json
+
+PROBLÈMES RÉSOLUS :
+- Erreur CORS lors des appels API en développement
+
+PROBLÈMES EN COURS :
+1. Déploiement Vercel
+   - Variables d'environnement cryptées non fonctionnelles
+   - Tentatives de configuration via CLI échouées
+   - Besoin de solution alternative pour le déploiement
+
+PROCHAINES ÉTAPES :
+1. Vérifier le déploiement avec la nouvelle configuration
+2. Révoquer et régénérer les tokens exposés
+3. Tester l'intégration du dictionnaire PONS
+
+Structure du projet
+1. Configuration racine
+Configuration React/Vite :  vite.config.ts, tsconfig*.json
+Configuration du style :  tailwind.config.js,  postcss.config.js
+Configuration du déploiement :  vercel.json
+Configuration ESLint :  eslint.config.js
+
+2. Source(/src)
+src/
+├── components/          # Composants React réutilisables
+│   ├── ui/             # Composants UI de base
+│   └── [composants spécifiques]
+├── pages/              # Pages/Routes principales
+├── lib/               # Logique métier et utilitaires
+├── services/          # Services externes (API, etc.)
+├── hooks/             # Hooks React personnalisés
+└── types/             # Définitions TypeScript
+
+3.Base de données (/supabase)
+supabase/
+└── migrations/        # Scripts de migration SQL
+
+4.API
+api/
+└── dictionary.ts      # Service d'API dictionnaire
+
+5. Debug et Monitoring
+debug/                 # Logs et enregistrements
+.bolt/                 # Configuration de débogage
+
+Points clés de l'architecture :
+
+Application React/TypeScript avec Vite
+Supabase pour la base de données
+Système d'authentification intégré
+Gestion d'état avec Zustand
+Routage avec React Router
+Styling avec Tailwind CSS
+Déploiement sur Vercel
+
+PHASE DE TEST :
+1. Configuration temporaire
+   - Variables d'environnement en clair pour tests
+   - Logs de débogage activés
+   - Composant de test PonsTest ajouté
+
+TODO après validation :
+1. Régénérer toutes les clés API
+2. Nettoyer les logs de débogage
+3. Sécuriser les variables d'environnement
+4. Supprimer le composant de test
+
+FORMATION :
+1. Commandes Git Essentielles
+   
+   git status
+   - Montre l'état actuel du repository
+   - Affiche les fichiers modifiés (rouge = non suivis, vert = prêts pour commit)
+   - Utiliser avant chaque commit pour vérifier les changements
+
+   git add <fichier>
+   - Ajoute un fichier à la "staging area" (zone de préparation)
+   - Exemple: git add vercel.json
+   - Les fichiers doivent être "staged" avant de pouvoir être commités
+
+   git commit -m "message"
+   - Crée un point de sauvegarde avec les fichiers stagés
+   - Le message doit décrire clairement les changements
+   - Convention: "type: description" (ex: "fix: Configure CORS for API")
+   - Types communs: fix, feat, docs, style, refactor
+
+   git push origin main
+   - Envoie les commits locaux vers GitHub
+   - origin = nom du repository distant (GitHub)
+   - main = nom de la branche principale
+
+2. Workflow de Déploiement
+   - Modification locale des fichiers
+   - git status pour vérifier
+   - git add pour stager
+   - git commit pour sauvegarder
+   - git push pour déployer
+   - Vercel détecte le push et démarre le déploiement automatiquement
+
+3. Bonnes Pratiques
+   - Toujours vérifier avec git status avant de commiter
+   - Écrire des messages de commit clairs et descriptifs
+   - Regrouper les modifications liées dans un même commit
+   - Tester localement avant de push
+   - Vérifier le déploiement sur Vercel après push
+
+4. Notes sur les Avertissements Courants
+   - CRLF vs LF : Différences de fins de ligne entre Windows (CRLF) et Unix (LF)
+   - Pas d'impact sur le code, peut être ignoré en développement
+
