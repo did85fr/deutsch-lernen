@@ -6,10 +6,11 @@ export default async function handler(
   request: VercelRequest,
   response: VercelResponse
 ) {
-  // Activer CORS
-  response.setHeader('Access-Control-Allow-Origin', '*');
-  response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  response.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Secret');
+  // CORS headers
+  response.setHeader('Access-Control-Allow-Credentials', 'true');
+  response.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  response.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,HEAD');
+  response.setHeader('Access-Control-Allow-Headers', 'X-Secret, Content-Type, Authorization, X-Requested-With');
 
   if (request.method === 'OPTIONS') {
     return response.status(200).end();
@@ -52,3 +53,5 @@ export default async function handler(
     });
   }
 }
+
+

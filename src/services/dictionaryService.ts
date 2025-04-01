@@ -2,6 +2,17 @@ import axios from 'axios';
 import rateLimit from 'axios-rate-limit';
 import { VocabularyEntry } from '../types/vocabulary';
 
+// Ajout des logs de débogage en haut du fichier
+console.log("=== Environment Variables Debug ===");
+console.log("VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
+console.log("VITE_SUPABASE_ANON_KEY:", import.meta.env.VITE_SUPABASE_ANON_KEY);
+console.log("VITE_PONS_API_KEY:", import.meta.env.VITE_PONS_API_KEY);
+console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
+console.log("NODE_ENV:", import.meta.env.NODE_ENV);
+console.log("DEV:", import.meta.env.DEV);
+console.log("PROD:", import.meta.env.PROD);
+console.log("================================");
+
 // Configuration
 const PONS_API_KEY = import.meta.env.VITE_PONS_API_KEY;
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
@@ -11,7 +22,10 @@ const wordCache = new Map<string, { result: any; timestamp: number }>();
 
 // Configuration de l'API
 const api = rateLimit(axios.create({
-  baseURL: 'https://german-vocab-app.vercel.app/api/dictionary',  // Remplacez l'URL placeholder
+  baseURL: import.meta.env.VITE_API_URL || 'https://german-vocab-app.vercel.app/api/dictionary',
+  headers: {
+    'X-Secret': import.meta.env.VITE_PONS_API_KEY
+  }
 }), {
   maxRequests: 10,
   perMilliseconds: 1000,
@@ -34,6 +48,7 @@ interface PonsResponse {
 }
 
 async function checkWithPonsAPI(word: string) {
+  console.log('Attempting PONS API call with key:', import.meta.env.VITE_PONS_API_KEY);
   try {
     const response = await api.get('', {
       params: { 
@@ -42,9 +57,11 @@ async function checkWithPonsAPI(word: string) {
       }
     });
 
-    console.log('PONS API Response:', response.data);
+    console.log('PONS API Raw Response:', response);
+    console.log('PONS API Response Data:', response.data);
 
     if (!response.data.exists || !response.data.matches) {
+      console.log('No matches found, falling back to local check');
       return checkWithLocalFallback(word);
     }
 
@@ -53,7 +70,7 @@ async function checkWithPonsAPI(word: string) {
       suggestions: parsePonsResponse(response.data.matches)
     };
   } catch (error) {
-    console.error('PONS API Error:', error);
+    console.error('PONS API Detailed Error:', error);
     return checkWithLocalFallback(word);
   }
 }
@@ -194,6 +211,13 @@ export function findSimilarWords(word: string, entries: VocabularyEntry[]) {
     entry.german.toLowerCase().trim() === normalizedWord
   );
 } 
+
+
+
+
+
+
+
 
 
 

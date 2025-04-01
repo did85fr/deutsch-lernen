@@ -1,9 +1,21 @@
 {
-  "build": {
-    "env": {
-      "VITE_SUPABASE_URL": "@vite_supabase_url",
-      "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
-      "PONS_API_KEY": "@pons_api_key"
+  "buildCommand": "vite build",
+  "devCommand": "vite dev",
+  "framework": "vite",
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Origin", "value": "http://localhost:5173" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,POST,HEAD" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-Secret, Content-Type, Authorization, X-Requested-With" }
+      ]
     }
-  }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" }
+  ]
 }
+
+
