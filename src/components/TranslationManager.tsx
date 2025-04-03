@@ -56,9 +56,9 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({
   const isAddButtonDisabled = !translations[translations.length - 1]?.text.trim();
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {translations.map((translation, index) => (
-        <div key={index} className="space-y-4 border rounded-lg p-4">
+        <div key={index} className="p-4 border rounded-lg bg-white">
           <div className="flex gap-3">
             <div className="flex-1 space-y-2">
               <div className="relative">
@@ -128,16 +128,14 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({
             )}
           </div>
           
-          <div className="pt-2 border-t">
-            <TagsManager
-              selectedTags={translation.tags}
-              selectedLists={translation.lists}
-              onTagsChange={(tags) => handleTranslationChange(index, 'tags', tags)}
-              onListsChange={(lists) => handleTranslationChange(index, 'lists', lists)}
-              availableTags={availableTags}
-              availableLists={availableLists}
-            />
-          </div>
+          <TagsManager
+            selectedTags={translation.tags}
+            selectedLists={translation.lists}
+            onTagsChange={(tags) => handleTranslationChange(index, 'tags', tags)}
+            onListsChange={(lists) => handleTranslationChange(index, 'lists', lists)}
+            availableTags={availableTags}
+            availableLists={availableLists}
+          />
         </div>
       ))}
       
@@ -159,4 +157,6 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({
 };
 
 export default TranslationManager;
+
+
 

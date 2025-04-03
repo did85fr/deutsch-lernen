@@ -9,6 +9,7 @@ import { MemoryGame } from '../pages/MemoryGame';
 import { MemoryGameMode } from '../pages/MemoryGameMode';
 import { Auth } from './Auth';
 import { Session } from '@supabase/supabase-js';
+import { ApiTestPage } from '../pages/ApiTestPage';
 
 interface AppRoutesProps {
   session: Session | null;
@@ -29,10 +30,12 @@ export function AppRoutes({ session }: AppRoutesProps) {
         <Route path="practice" element={<Practice />} />
         <Route path="memory" element={<MemoryGameMode />} />
         <Route path="memory/:mode" element={<MemoryGame />} />
+        <Route path="/api-test" element={<ApiTestPage />} />
       </Route>
     </Routes>
   );
 }
+
 
 
 

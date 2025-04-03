@@ -14,7 +14,7 @@
   ],
   "dev": {
     "autoLaunch": false
-  }
+  },
+  "devCommand": "",
+  "buildCommand": null
 }
-
-

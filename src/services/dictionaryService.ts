@@ -22,8 +22,8 @@ const wordCache = new Map<string, { result: any; timestamp: number }>();
 
 // Configuration de l'API
 const API_BASE_URL = import.meta.env.DEV 
-  ? 'http://localhost:3000/api/dictionary'  // URL locale
-  : 'https://deutsch-lernen-omega.vercel.app/api/dictionary'; // URL production
+  ? 'http://localhost:3001/api/dictionary'  // Mise à jour du port
+  : 'https://deutsch-lernen-omega.vercel.app/api/dictionary';
 
 const api = rateLimit(axios.create({
   baseURL: API_BASE_URL,
@@ -231,6 +231,8 @@ export function findSimilarWords(word: string, entries: VocabularyEntry[]) {
     entry.german.toLowerCase().trim() === normalizedWord
   );
 } 
+
+
 
 
 

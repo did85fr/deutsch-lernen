@@ -1,26 +1,71 @@
 import { create } from 'zustand';
-import { supabase } from './supabaseClient';
+import { supabase } from './supabase';
+import { WordEntry, Translation } from '../types/vocabulary';
 
-interface VocabularyState {
-  entries: VocabularyEntry[];
+interface VocabularyStore {
+  entries: WordEntry[];
   loading: boolean;
   error: string | null;
   tags: string[];
   lists: string[];
-  loadEntries: () => Promise<void>;
-  addEntry: (entry: Omit<VocabularyEntry, 'id'>) => Promise<void>;
-  updateEntry: (entry: VocabularyEntry) => Promise<void>;
+  setTags: (tags: string[]) => void;
+  setLists: (lists: string[]) => void;
+  fetchTagsAndLists: () => Promise<void>;
+  addEntry: (entry: Omit<WordEntry, 'id'>) => Promise<void>;
+  updateEntry: (id: string, entry: Partial<WordEntry>) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
-  addTag: (tag: string) => void;
-  addList: (list: string) => void;
+  loadEntries: () => Promise<void>;
 }
 
-export const useVocabularyStore = create<VocabularyState>((set, get) => ({
+export const useVocabularyStore = create<VocabularyStore>((set, get) => ({
   entries: [],
   loading: false,
   error: null,
   tags: [],
   lists: [],
+
+  setTags: (tags) => set({ tags }),
+  setLists: (lists) => set({ lists }),
+
+  fetchTagsAndLists: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('vocabulary')
+        .select('translations, lists');
+
+      if (error) throw error;
+
+      const uniqueTags = new Set<string>();
+      const uniqueLists = new Set<string>();
+
+      data?.forEach(entry => {
+        // Extract lists from translations
+        const translations = entry.translations as Translation[];
+        translations?.forEach(translation => {
+          // Extract tags
+          translation.tags?.forEach(tag => uniqueTags.add(tag));
+          // Extract lists from translation
+          translation.lists?.forEach(list => uniqueLists.add(list));
+        });
+      });
+
+      // Convert Sets to sorted arrays
+      const sortedTags = Array.from(uniqueTags).sort();
+      const sortedLists = Array.from(uniqueLists).sort();
+
+      console.log('Tags avant setState:', sortedTags);
+      console.log('Listes avant setState:', sortedLists);
+
+      set({ 
+        tags: sortedTags,
+        lists: sortedLists
+      });
+
+    } catch (error) {
+      console.error('Error fetching tags and lists:', error);
+      set({ error: error instanceof Error ? error.message : 'An error occurred' });
+    }
+  },
 
   loadEntries: async () => {
     set({ loading: true, error: null });
@@ -28,11 +73,10 @@ export const useVocabularyStore = create<VocabularyState>((set, get) => ({
       const { data, error } = await supabase
         .from('vocabulary')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false });  // Déjà trié par date
 
       if (error) throw error;
 
-      // Convertir snake_case en camelCase pour le frontend
       const entries = (data || []).map(entry => ({
         ...entry,
         isFavorite: entry.is_favorite,
@@ -41,13 +85,34 @@ export const useVocabularyStore = create<VocabularyState>((set, get) => ({
         createdAt: entry.created_at
       }));
       
-      const uniqueTags = [...new Set(
-        entries.flatMap(entry => entry.tags || [])
-      )].filter(Boolean);
+      // Modification ici pour trier les tags et listes par date d'utilisation
+      const tagsWithDates = entries.flatMap(entry => 
+        (entry.tags || []).map(tag => ({
+          tag,
+          date: entry.created_at
+        }))
+      );
 
+      const listsWithDates = entries.flatMap(entry => 
+        (entry.lists || []).map(list => ({
+          list,
+          date: entry.created_at
+        }))
+      );
+
+      // Obtenir les tags uniques les plus récents
+      const uniqueTags = [...new Set(
+        tagsWithDates
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .map(t => t.tag)
+      )];
+
+      // Obtenir les listes uniques les plus récentes
       const uniqueLists = [...new Set(
-        entries.flatMap(entry => entry.lists || [])
-      )].filter(Boolean);
+        listsWithDates
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .map(l => l.list)
+      )];
 
       set({ 
         entries, 
@@ -62,112 +127,63 @@ export const useVocabularyStore = create<VocabularyState>((set, get) => ({
   },
 
   addEntry: async (entry) => {
+    set({ loading: true, error: null });
     try {
-      // Récupérer d'abord l'ID de l'utilisateur
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      // Convertir camelCase en snake_case pour la base de données
-      const dbEntry = {
-        ...entry,
+      const supabaseEntry = {
+        german: entry.german,
+        translations: entry.translations,
+        type: entry.type,
+        gender: entry.gender,
+        plural: entry.plural,
+        proficiency: entry.proficiency,
+        tags: entry.tags,
         is_favorite: entry.isFavorite,
         last_reviewed: entry.lastReviewed,
         next_review: entry.nextReview,
-        user_id: user.id // Utiliser directement l'ID de l'utilisateur
+        created_at: new Date().toISOString()
       };
-
-      // Supprimer les propriétés en camelCase
-      delete (dbEntry as any).isFavorite;
-      delete (dbEntry as any).lastReviewed;
-      delete (dbEntry as any).nextReview;
 
       const { data, error } = await supabase
         .from('vocabulary')
-        .insert([dbEntry])
+        .insert([supabaseEntry])
         .select();
 
       if (error) throw error;
 
-      // Convertir snake_case en camelCase pour le frontend
-      const newEntry = {
-        ...data[0],
-        isFavorite: data[0].is_favorite,
-        lastReviewed: data[0].last_reviewed,
-        nextReview: data[0].next_review,
-      };
-
-      const currentEntries = get().entries;
-      const currentTags = get().tags;
-      const currentLists = get().lists;
-
-      const newTags = [...new Set([...currentTags, ...(newEntry.tags || [])])];
-      const newLists = [...new Set([...currentLists, ...(newEntry.lists || [])])];
-
-      set({
-        entries: [newEntry, ...currentEntries],
-        tags: newTags,
-        lists: newLists
-      });
-
-      return newEntry;
+      await get().loadEntries();
+      await get().fetchTagsAndLists();  // Ajout de fetchTagsAndLists ici
     } catch (error) {
-      console.error('Error adding entry:', error);
-      throw error;
+      console.error('Error in addEntry:', error);
+      set({ error: error instanceof Error ? error.message : 'An error occurred' });
+    } finally {
+      set({ loading: false });
     }
   },
 
-  updateEntry: async (entry: VocabularyEntry) => {
+  updateEntry: async (id, entry) => {
+    set({ loading: true, error: null });
     try {
-      // Vérification que chaque traduction a la bonne structure
-      const validatedTranslations = entry.translations.map(t => ({
-        text: t.text || '',
-        context: t.context || '',
-        tags: Array.isArray(t.tags) ? t.tags : [],
-        lists: Array.isArray(t.lists) ? t.lists : []
-      }));
-
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('vocabulary')
         .update({
-          german: entry.german,
-          translations: validatedTranslations,
-          type: entry.type,
-          gender: entry.type === 'noun' ? entry.gender : null,
-          plural: entry.type === 'noun' ? entry.plural : null,
-          proficiency: entry.proficiency,
-          sm2_state: entry.sm2State,
+          ...entry,
+          is_favorite: entry.isFavorite,
+          last_reviewed: entry.lastReviewed,
+          next_review: entry.nextReview,
           updated_at: new Date().toISOString()
         })
-        .eq('id', entry.id)
-        .select();
+        .eq('id', id);
 
       if (error) throw error;
 
-      // Mise à jour du state
-      set(state => {
-        const updatedEntries = state.entries.map(e => 
-          e.id === entry.id ? { ...entry, translations: validatedTranslations } : e
-        );
-        
-        // Collecte de tous les tags et listes uniques de toutes les traductions
-        const allTags = new Set(updatedEntries.flatMap(e => 
-          e.translations.flatMap(t => t.tags)
-        ));
-        const allLists = new Set(updatedEntries.flatMap(e => 
-          e.translations.flatMap(t => t.lists)
-        ));
+      // Mettre à jour les entries et rafraîchir les tags/lists
+      await get().loadEntries();
+      await get().fetchTagsAndLists();
 
-        return {
-          entries: updatedEntries,
-          tags: [...allTags],
-          lists: [...allLists]
-        };
-      });
-
-      return data[0];
     } catch (error) {
-      console.error('Error updating entry:', error);
-      throw error;
+      set({ error: error instanceof Error ? error.message : 'An error occurred' });
+    } finally {
+      set({ loading: false });
     }
   },
 
@@ -183,6 +199,9 @@ export const useVocabularyStore = create<VocabularyState>((set, get) => ({
       set(state => ({
         entries: state.entries.filter(e => e.id !== id)
       }));
+
+      // Ajouter après la suppression :
+      await get().fetchTagsAndLists();
     } catch (error) {
       console.error('Error deleting entry:', error);
       throw error;
@@ -201,6 +220,19 @@ export const useVocabularyStore = create<VocabularyState>((set, get) => ({
     }));
   }
 }));
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

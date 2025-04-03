@@ -1,27 +1,268 @@
 GERMAN VOCABULARY APP - RÉSUMÉ DU PROJET
 
-ARCHITECTURE :
-- Frontend: React + Vite + TypeScript
-- Backend: Supabase
-- Déploiement: Vercel (problèmes non résolus avec les variables d'environnement)
-- Style: Tailwind CSS
+I. PRÉSENTATION GÉNÉRALE
+   A. Architecture
+   - Frontend: React + Vite + TypeScript
+   - Backend: Supabase
+   - Déploiement: Vercel
+   - Style: Tailwind CSS
 
-FONCTIONNALITÉS PRINCIPALES :
-1. Gestion du vocabulaire
-   - Ajout/édition/suppression de mots
-   - Support pour les traductions multiples
-   - Système de tags et listes
+   B. Fonctionnalités Principales
+   1. Gestion du vocabulaire
+      - Ajout/édition/suppression de mots
+      - Support pour les traductions multiples
+      - Système de tags et listes
 
-2. Système d'apprentissage
-   - Jeu de mémoire
-   - Système de révision espacée (SM2)
-   - Suivi de la progression
+   2. Système d'apprentissage
+      - Jeu de mémoire
+      - Système de révision espacée (SM2)
+      - Suivi de la progression
 
-3. Authentification
-   - Login/Logout via Supabase
-   - Debug mode en développement
+   3. Authentification
+      - Login/Logout via Supabase
+      - Debug mode en développement
 
-MODIFICATIONS MAJEURES :
+   C. Structure du Projet
+   1. Configuration racine
+      - vite.config.ts, tsconfig*.json
+      - tailwind.config.js, postcss.config.js
+      - vercel.json
+      - eslint.config.js
+
+   2. Structure des dossiers
+      src/
+      ├── components/          # Composants React réutilisables
+      │   ├── ui/             # Composants UI de base
+      │   └── [composants spécifiques]
+      ├── pages/              # Pages/Routes principales
+      ├── lib/               # Logique métier et utilitaires
+      ├── services/          # Services externes (API, etc.)
+      ├── hooks/             # Hooks React personnalisés
+      └── types/             # Définitions TypeScript
+
+II. CONFIGURATION ET DÉPLOIEMENT
+    A. Configuration Validée [03/04/2024]
+    1. Versions validées :
+       - Node.js: v22.14.0
+       - npm: 10.9.2
+       - Vercel CLI: 41.4.1
+       - Vite: 5.1.4
+
+    2. Structure minimale requise :
+       Bolt_DL - Copie/
+       ├── api/
+       │   └── dictionary.ts    # Point d'entrée API
+       ├── src/                # Code frontend React
+       ├── package.json        
+       └── vercel.json         
+
+    B. Variables d'Environnement (CONFIDENTIEL - USAGE INTERNE UNIQUEMENT)
+    
+    1. Supabase
+    VITE_SUPABASE_URL=https://yofexqdswetgoscpwmjz.supabase.co
+    VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvZmV4cWRzd2V0Z29zY3B3bWp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk0NzIzMjgsImV4cCI6MjAyNTA0ODMyOH0.BLn7eb0Iu_btRuA3ZTWxfM6WTgXh0RVNFxR3RjRe_Zs
+
+    2. PONS Dictionary API
+    VITE_PONS_API_KEY=62b9274a31d6c11ad4f0d73eb9679a4c2e3d2da8e3c36b2e684f6e4b7c9f
+
+    3. Vercel
+    VERCEL_PROJECT_ID=prj_VkgxVhzYN8PI3KWZXXXXXXXXXwFJ
+    VERCEL_API_TOKEN=8KzX5P9qPYbG3XXXXXXXXXX4Bf
+
+    Notes importantes:
+    - Ces valeurs sont à usage strictement interne
+    - Ne jamais les exposer dans le code public
+    - Rotation des clés prévue tous les 3 mois
+    - Dernière mise à jour: 03/04/2024
+    
+    C. Déploiement Vercel
+    - Nom du projet : deutsch-lernen
+    - Organisation : did85s-projects
+    - Variables d'environnement configurées et chiffrées
+
+III. GUIDE DE DÉVELOPPEMENT
+     A. Formation
+     1. Démarrage du Projet (IMPORTANT)
+        Terminal 1 (API) :
+        ```bash
+        cd "C:\dev\Bolt_DL - Copie"
+        vercel dev --listen 3000
+        ```
+        Terminal 2 (Frontend) :
+        ```bash
+        cd "C:\dev\Bolt_DL - Copie"
+        npm run dev
+        ```
+
+     B. Commandes Essentielles
+     - npm run dev : Démarre le frontend
+     - vercel dev --listen 3000 : Démarre l'API
+     - npm run build : Build le projet
+     - npm run lint : Vérifie le code
+
+     C. Workflow Git
+     - git status : Vérifier l'état
+     - git add : Stager les changements
+     - git commit : Sauvegarder les modifications
+     - git push : Déployer
+
+     D. Bonnes Pratiques
+     - Toujours vérifier git status avant commit
+     - Messages de commit clairs et descriptifs
+     - Tests locaux avant push
+     - Vérification post-déploiement
+
+IV. DOCUMENTATION TECHNIQUE
+    A. Structure des API
+    - Point d'entrée : /api/dictionary.ts
+    - Endpoint : http://localhost:3000/api/dictionary
+    - Paramètres : q (mot) et language (deen)
+
+    B. Base de Données
+    - Supabase pour le stockage
+    - Migrations dans /supabase/migrations
+    - Format JSON pour les traductions
+
+    C. Configuration CORS
+    - Headers configurés dans vercel.json
+    - Access-Control-Allow-Origin: *
+    - Méthodes autorisées : GET,OPTIONS,POST,PUT,DELETE
+
+    D. Tests et Debugging
+    - Interface de debug en mode DEV
+    - AuthLogger pour l'authentification
+    - Composant PonsTest.tsx pour tests API
+
+IV.bis GESTION DES TAGS ET LISTES
+
+A. Architecture des Données
+   1. Flux de données
+      - Store (useVocabularyStore) → AddWord/EditWord → TranslationManager → TagsManager
+      - Données stockées dans Supabase, table 'vocabulary', colonne 'translations'
+
+   2. Structure
+      - Tags et listes stockés dans chaque traduction
+      - Format: translations: Array<{ text: string, context: string, tags: string[], lists: string[] }>
+
+   3. Différences Tags vs Thèmes
+      a. Tags
+         - 5 tags par défaut prédéfinis dans TagsManager.tsx :
+           * Difficile (rouge)
+           * Moyen (orange)
+           * Facile (vert)
+           * À réviser (jaune)
+           * Important (violet)
+         - Comportement dynamique :
+           * Les tags par défaut se masquent quand sélectionnés
+           * Réapparaissent si retirés de la sélection
+           * Stockés dans DEFAULT_TAG_SUGGESTIONS
+           * Styles et couleurs prédéfinis
+
+      b. Thèmes
+         - Pas de thèmes par défaut
+         - Liste entièrement dynamique basée sur les données existantes
+         - Même couleur pour tous les thèmes (bleu)
+         - Suggestions basées uniquement sur l'historique d'utilisation
+
+B. Logique d'Implémentation
+   1. Récupération (src/lib/store.ts)
+      - Méthode fetchTagsAndLists() extrait tags/listes uniques
+      - Parcours toutes les traductions de vocabulary
+      - Utilise Set pour dédupliquer
+
+   2. Points d'intégration
+      - AddWord.tsx : Gestion ajout
+      - EditWord.tsx : Gestion modification
+      - TranslationManager.tsx : Composant intermédiaire
+      - TagsManager.tsx : Interface utilisateur
+
+C. Maintenance et Debugging
+   Si le système ne fonctionne pas :
+   1. Vérifier store.ts
+      - Confirmer présence fetchTagsAndLists
+      - Vérifier extraction données Supabase
+      - Pour les tags : vérifier DEFAULT_TAG_SUGGESTIONS dans TagsManager.tsx
+      - Pour les thèmes : vérifier la récupération depuis availableLists
+
+   2. Vérifier composants
+      - AddWord/EditWord : useEffect avec fetchTagsAndLists
+      - TranslationManager : Passage correct props
+      - TagsManager : Réception et affichage données
+
+   3. Points de contrôle
+      - Console.log dans fetchTagsAndLists
+      - Vérifier structure translations dans Supabase
+      - Confirmer props drilling complet
+
+   4. Problèmes Connus et Solutions
+      a. Erreur "entries is not defined"
+         - Symptôme : Page blanche lors de la saisie d'un mot allemand
+         - Cause : Variable entries non importée du store
+         - Solution : 
+           * Ajouter l'import depuis useVocabularyStore
+           * Utiliser destructuring avec valeur par défaut : const { entries = [] } = useVocabularyStore();
+         - Fichiers concernés : src/pages/AddWord.tsx
+         - Impact : Affecte la recherche de mots similaires
+
+      b. Points de vérification si l'erreur revient :
+         - Confirmer que useVocabularyStore est correctement importé
+         - Vérifier que entries est destructuré du store
+         - Valider que la valeur par défaut [] est présente
+
+D. Suggestions d'Amélioration
+   - Mise en cache des tags/listes fréquents
+   - Système de suggestions intelligent
+   - Gestion des tags/listes obsolètes
+
+D. Bugs en cours (31/03/2024)
+   1. Erreur Supabase lors de l'ajout d'un mot
+      - Message d'erreur : "Could not find the 'tags' column of 'vocabulary' in the schema cache"
+      - Contexte : 
+        * Tentative d'ajout du mot "Beruf" avec le tag "Difficile"
+        * Les tags semblent correctement chargés (7 tags dont les DEFAULT_TAG_SUGGESTIONS)
+        * L'erreur survient dans store.ts:156 pendant addEntry()
+      
+      - Diagnostic préliminaire :
+        * Problème de schéma Supabase : la colonne 'tags' n'est pas reconnue
+        * Possible désynchronisation entre le schéma local et Supabase
+        * Les tags sont peut-être stockés différemment (dans translations ?)
+
+      - À vérifier demain :
+        1. Structure de la table 'vocabulary' dans Supabase
+        2. Vérifier si les tags doivent être dans translations plutôt que root
+        3. Revoir la fonction addEntry dans store.ts
+        4. Comparer avec un ajout réussi précédent
+
+      - Fichiers concernés :
+        * src/lib/store.ts (fonction addEntry)
+        * src/pages/AddWord.tsx
+        * Base de données Supabase
+
+V. TODO ET PROCHAINES ÉTAPES
+   
+   A. Nettoyage du code
+   - Purger l'ancien code de navigation dans Layout.tsx
+   - Supprimer les styles de navigation redondants
+   - Nettoyer l'ancien système de navigation avec NavLink
+   - Vérifier et supprimer tout code mort lié à l'ancien header
+
+   B. Page AddWord
+   - Restaurer les boutons manquants
+   - Vérifier la fonctionnalité complète
+   - S'assurer que le design est cohérent avec le reste de l'application
+
+   C. Tests et Validation
+   - Tester chaque route après les modifications
+   - Vérifier que la navigation fonctionne correctement
+   - S'assurer que tous les composants sont correctement stylisés
+
+VI. POINTS DE VIGILANCE
+    - Ne pas modifier la configuration de vercel.json
+    - Ne pas changer les ports (5173 pour frontend, 3000 pour API)
+    - Toujours démarrer l'API avant le frontend
+    - En cas d'erreur, vérifier d'abord les ports utilisés
+
+MODIFICATIONS MAJEURES HISTORIQUES :
 1. Structure de données
    - Migration vers format JSON pour les traductions
    - Support métadonnées (contexte, tags, listes)
@@ -31,159 +272,20 @@ MODIFICATIONS MAJEURES :
    - Interface de debug en mode DEV
 
 3. Sécurité
-   - Nettoyage des tokens exposés dans .env.example
-   - Migration des variables sensibles vers .env.local
+   - Nettoyage des tokens exposés
+   - Migration des variables sensibles
    - Configuration sécurisée de Vercel
 
 4. Correction CORS
-   - Configuration des headers CORS dans l'API
-   - Adaptation de l'URL de l'API pour le développement
-   - Configuration CORS dans vercel.json
+   - Configuration des headers CORS
+   - Adaptation de l'URL de l'API
+   - Configuration dans vercel.json
 
 PROBLÈMES RÉSOLUS :
 - Erreur CORS lors des appels API en développement
 
 PROBLÈMES EN COURS :
-1. Déploiement Vercel
-   - Variables d'environnement cryptées non fonctionnelles
-   - Tentatives de configuration via CLI échouées
-   - Besoin de solution alternative pour le déploiement
-
-ÉTAT ACTUEL DU DÉVELOPPEMENT (dernière mise à jour) :
-
-1. Configuration de Développement
-   - Terminal 1 (API): vercel dev --listen 3000
-   - Terminal 2 (Frontend): npm run dev
-   - Frontend accessible sur: http://localhost:5173
-   - API accessible sur: http://localhost:3000/api/dictionary
-
-2. Points de Test
-   - L'API dictionnaire est en cours de débogage
-   - CORS configuré mais nécessite des ajustements
-   - Test direct API: http://localhost:3000/api/dictionary?q=haus&language=deen
-   - Test via Frontend: http://localhost:5173 (utiliser l'interface)
-
-3. Pour Reprendre le Développement
-   Étapes de lancement :
-   a) Ouvrir deux terminaux
-   b) Dans le premier :
-      ```
-      cd [chemin-du-projet]
-      vercel dev --listen 3000
-      ```
-   c) Dans le second :
-      ```
-      cd [chemin-du-projet]
-      npm run dev
-      ```
-
-4. Avant de Quitter
-   Pour sauvegarder sur GitHub :
-   ```
-   git add .
-   git commit -m "WIP: CORS configuration and API debugging in progress"
-   git push origin main
-   ```
-
-PROCHAINES ÉTAPES :
-1. Déboguer la communication Frontend-API
-2. Vérifier les réponses de l'API sur http://localhost:3000/api/dictionary
-3. Finaliser la configuration CORS
-4. Tester l'intégration complète Frontend-API
-
-Structure du projet
-1. Configuration racine
-Configuration React/Vite :  vite.config.ts, tsconfig*.json
-Configuration du style :  tailwind.config.js,  postcss.config.js
-Configuration du déploiement :  vercel.json
-Configuration ESLint :  eslint.config.js
-
-2. Source(/src)
-src/
-├── components/          # Composants React réutilisables
-│   ├── ui/             # Composants UI de base
-│   └── [composants spécifiques]
-├── pages/              # Pages/Routes principales
-├── lib/               # Logique métier et utilitaires
-├── services/          # Services externes (API, etc.)
-├── hooks/             # Hooks React personnalisés
-└── types/             # Définitions TypeScript
-
-3.Base de données (/supabase)
-supabase/
-└── migrations/        # Scripts de migration SQL
-
-4.API
-api/
-└── dictionary.ts      # Service d'API dictionnaire
-
-5. Debug et Monitoring
-debug/                 # Logs et enregistrements
-.bolt/                 # Configuration de débogage
-
-Points clés de l'architecture :
-
-Application React/TypeScript avec Vite
-Supabase pour la base de données
-Système d'authentification intégré
-Gestion d'état avec Zustand
-Routage avec React Router
-Styling avec Tailwind CSS
-Déploiement sur Vercel
-
-PHASE DE TEST :
-1. Configuration temporaire
-   - Variables d'environnement en clair pour tests
-   - Logs de débogage activés
-   - Composant de test PonsTest ajouté
-
-TODO après validation :
-1. Régénérer toutes les clés API
-2. Nettoyer les logs de débogage
-3. Sécuriser les variables d'environnement
-4. Supprimer le composant de test
-
-FORMATION :
-1. Commandes Git Essentielles
-   
-   git status
-   - Montre l'état actuel du repository
-   - Affiche les fichiers modifiés (rouge = non suivis, vert = prêts pour commit)
-   - Utiliser avant chaque commit pour vérifier les changements
-
-   git add <fichier>
-   - Ajoute un fichier à la "staging area" (zone de préparation)
-   - Exemple: git add vercel.json
-   - Les fichiers doivent être "staged" avant de pouvoir être commités
-
-   git commit -m "message"
-   - Crée un point de sauvegarde avec les fichiers stagés
-   - Le message doit décrire clairement les changements
-   - Convention: "type: description" (ex: "fix: Configure CORS for API")
-   - Types communs: fix, feat, docs, style, refactor
-
-   git push origin main
-   - Envoie les commits locaux vers GitHub
-   - origin = nom du repository distant (GitHub)
-   - main = nom de la branche principale
-
-2. Workflow de Déploiement
-   - Modification locale des fichiers
-   - git status pour vérifier
-   - git add pour stager
-   - git commit pour sauvegarder
-   - git push pour déployer
-   - Vercel détecte le push et démarre le déploiement automatiquement
-
-3. Bonnes Pratiques
-   - Toujours vérifier avec git status avant de commiter
-   - Écrire des messages de commit clairs et descriptifs
-   - Regrouper les modifications liées dans un même commit
-   - Tester localement avant de push
-   - Vérifier le déploiement sur Vercel après push
-
-4. Notes sur les Avertissements Courants
-   - CRLF vs LF : Différences de fins de ligne entre Windows (CRLF) et Unix (LF)
-   - Pas d'impact sur le code, peut être ignoré en développement
-
+- Conflit dans vercel.json entre `functions` et `builds`
+- Vercel démarre Vite au lieu de l'API
+- Les ports se chevauchent entre l'API et le frontend
 

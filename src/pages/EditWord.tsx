@@ -10,12 +10,16 @@ import { Star } from 'lucide-react';
 export function EditWord() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { entries, updateEntry, tags, lists } = useVocabularyStore();
+  const { entries, updateEntry, tags, lists, fetchTagsAndLists } = useVocabularyStore();
   const { toast } = useToast();
   const [formData, setFormData] = useState<VocabularyEntry | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const germanInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetchTagsAndLists();
+  }, [fetchTagsAndLists]);
 
   useEffect(() => {
     const entry = entries.find(e => e.id === id);
@@ -274,5 +278,6 @@ export function EditWord() {
     </div>
   );
 } 
+
 
 

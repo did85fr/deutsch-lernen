@@ -6,18 +6,23 @@ import { Toast } from '../components/Toast';
 import { GermanCharacters } from '../components/GermanCharacters';
 import TranslationManager from '../components/TranslationManager';
 import { findSimilarWords } from '../services/dictionaryService';
-import { ChevronDown, AlertCircle, InfoIcon } from 'lucide-react';
+import { ChevronDown, AlertCircle, InfoIcon, ArrowLeft, Star } from 'lucide-react';
 import { useToast } from '../components/ui/use-toast';
 import { TagsManager } from '../components/TagsManager';
-import { Star } from 'lucide-react';
 import { checkGermanWord } from '../services/dictionaryService';
 import { toast } from 'react-hot-toast';
 import DOMPurify from 'dompurify';
 import { PonsTest } from '../components/PonsTest';
+import { Button } from '../components/ui/Button';
 
 export function AddWord() {
   const navigate = useNavigate();
-  const { addEntry, entries, tags = [], lists = [] } = useVocabularyStore();
+  const { addEntry, tags, lists, fetchTagsAndLists, entries = [] } = useVocabularyStore();
+
+  useEffect(() => {
+    fetchTagsAndLists();
+  }, [fetchTagsAndLists]);
+
   const { toast: useToastToast } = useToast();
   const [toastState, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
   const germanInputRef = React.useRef<HTMLTextAreaElement>(null);
@@ -49,7 +54,7 @@ export function AddWord() {
   const [isTranslationDropdownOpen, setIsTranslationDropdownOpen] = useState(false);
 
   // Vérification des doublons
-  const similarWords = formData.german ? findSimilarWords(formData.german, entries) : [];
+  const similarWords = entries.filter(entry => entry.german.toLowerCase() === formData.german.toLowerCase());
 
   const checkWord = async () => {
     console.log('Starting word check for:', formData.german.trim()); // Debug log 1
@@ -109,19 +114,16 @@ export function AddWord() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Vérifier si au moins une traduction non vide existe
     if (!formData.german || !formData.translations.some(t => t.text.trim())) {
       toast.error('Les champs allemand et au moins une traduction sont obligatoires');
       return;
     }
 
-    // Vérification des doublons
     if (similarWords.length > 0) {
       toast.error('Ce mot existe déjà dans votre vocabulaire');
       return;
     }
 
-    // Avertissement si le mot n'existe pas dans le dictionnaire
     if (!dictionaryInfo.exists && formData.type !== 'phrase' && formData.type !== 'quote') {
       const confirm = window.confirm(
         "Ce mot n'a pas été trouvé dans le dictionnaire. Voulez-vous quand même l'ajouter ?"
@@ -131,14 +133,27 @@ export function AddWord() {
 
     try {
       const now = new Date().toISOString();
-      await addEntry({
+      const cleanedTranslations = formData.translations.filter(t => t.text.trim() !== '');
+      
+      console.log('Données à envoyer:', {
         ...formData,
+        translations: cleanedTranslations,
         lastReviewed: now,
         nextReview: now,
       });
-      toast.success('Mot ajouté ! Le mot a été ajouté avec succès à votre vocabulaire.');
+
+      await addEntry({
+        ...formData,
+        translations: cleanedTranslations,
+        lastReviewed: now,
+        nextReview: now,
+      });
+      
+      console.log('Entrée ajoutée avec succès');
+      toast.success('Mot ajouté avec succès');
       navigate('/list');
     } catch (err) {
+      console.error("Erreur complète:", err);
       toast.error(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
@@ -199,12 +214,25 @@ export function AddWord() {
 
   return (
     <div className="container mx-auto p-4 max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">Ajouter un mot</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Ajouter un mot</h1>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/list')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Retour à la liste
+          </Button>
+        </div>
+      </div>
       
-      {/* Ajoutez le composant de test ici */}
-      <PonsTest />
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <PonsTest />
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div>
@@ -316,12 +344,9 @@ export function AddWord() {
               <TranslationManager
                 translations={formData.translations}
                 onChange={(translations) => setFormData(prev => ({ ...prev, translations }))}
-                availableTags={tags || []}
-                availableLists={lists || []}
+                availableTags={tags}
+                availableLists={lists}
                 dictionaryTranslations={dictionaryInfo.translation ? dictionaryInfo.translation.split(',').map(t => t.trim()) : []}
-                onTranslationSelect={(translation) => {
-                  // Optionnel : gérer la sélection d'une traduction si nécessaire
-                }}
               />
             </div>
 
@@ -364,20 +389,6 @@ export function AddWord() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Organisation
-              </label>
-              <TagsManager
-                selectedTags={formData.tags}
-                selectedLists={formData.lists}
-                onTagsChange={handleTagsChange}
-                onListsChange={handleListsChange}
-                availableTags={tags || []}
-                availableLists={lists || []}
-              />
-            </div>
-
-            <div>
               <label className="flex items-center space-x-2 text-sm font-medium mb-1">
                 <input
                   type="checkbox"
@@ -394,25 +405,39 @@ export function AddWord() {
           </div>
         </div>
 
-        <div className="flex justify-end space-x-4">
-          <button
+        <div className="flex justify-end space-x-4 pt-6 border-t">
+          <Button
             type="button"
+            variant="outline"
             onClick={() => navigate('/list')}
-            className="px-4 py-2 border rounded-md hover:bg-gray-50"
           >
             Annuler
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+            variant="default"
+            className="bg-indigo-600 hover:bg-indigo-700"
           >
             Ajouter
-          </button>
+          </Button>
         </div>
       </form>
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

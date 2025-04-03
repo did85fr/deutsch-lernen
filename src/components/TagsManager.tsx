@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { X, Plus, Tag, List } from 'lucide-react';
 
-// Tags suggérés par défaut avec leurs couleurs
+// Tags par défaut avec leurs couleurs
 const DEFAULT_TAG_SUGGESTIONS = [
   { name: 'Difficile', color: 'bg-red-100 text-red-800 hover:bg-red-200 border border-red-200' },
   { name: 'Moyen', color: 'bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-200' },
@@ -33,155 +33,108 @@ export const TagsManager: React.FC<TagsManagerProps> = ({
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [showListSuggestions, setShowListSuggestions] = useState(false);
 
-  // Récupérer les 5 derniers thèmes les plus utilisés
-  const recentlyUsedLists = useMemo(() => {
-    if (!availableLists?.length) return [];
-    
-    const listFrequency = availableLists.reduce((acc, list) => {
-      acc[list] = (acc[list] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+  // Gestionnaire de clic à l'extérieur
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.tag-input-container')) {
+        setShowTagSuggestions(false);
+      }
+      if (!target.closest('.list-input-container')) {
+        setShowListSuggestions(false);
+      }
+    };
 
-    return Object.entries(listFrequency)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 5)
-      .map(([list]) => list);
-  }, [availableLists]);
-
-  // Récupérer les tags les plus utilisés
-  const recentlyUsedTags = useMemo(() => {
-    if (!availableTags?.length) return [];
-    
-    const customTags = availableTags.filter(
-      tag => !DEFAULT_TAG_SUGGESTIONS.some(defaultTag => defaultTag.name === tag)
-    );
-    
-    const tagFrequency = customTags.reduce((acc, tag) => {
-      acc[tag] = (acc[tag] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return Object.entries(tagFrequency)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 5)
-      .map(([tag]) => tag);
-  }, [availableTags]);
-
-  // Récupérer les thèmes disponibles (non sélectionnés)
-  const availableRecentLists = useMemo(() => {
-    return recentlyUsedLists.filter(list => !selectedLists.includes(list));
-  }, [recentlyUsedLists, selectedLists]);
-
-  const filteredTagSuggestions = useMemo(() => {
-    if (!newTag.trim()) {
-      // Afficher les tags par défaut si aucune recherche n'est en cours
-      return DEFAULT_TAG_SUGGESTIONS.map(tag => tag.name)
-        .filter(tagName => !selectedTags.includes(tagName));
-    }
-
-    // Filtrer les tags disponibles basés sur la recherche
-    const searchResults = availableTags
-      .filter(tag => 
-        tag.toLowerCase().includes(newTag.toLowerCase()) && 
-        !selectedTags.includes(tag)
-      )
-      .slice(0, 5);
-    
-    // Combiner avec les tags par défaut si pertinent
-    const defaultMatches = DEFAULT_TAG_SUGGESTIONS
-      .map(tag => tag.name)
-      .filter(tagName => 
-        tagName.toLowerCase().includes(newTag.toLowerCase()) && 
-        !selectedTags.includes(tagName)
-      );
-
-    return [...defaultMatches, ...searchResults]
-      .filter((tag, index, self) => self.indexOf(tag) === index)
-      .slice(0, 5);
-  }, [newTag, availableTags, selectedTags]);
-
-  const filteredListSuggestions = useMemo(() => {
-    if (!newList.trim()) {
-      // Afficher les thèmes récents si aucune recherche n'est en cours
-      return recentlyUsedLists.filter(list => !selectedLists.includes(list));
-    }
-    
-    // Sinon, filtrer les thèmes disponibles basés sur la recherche
-    const searchResults = availableLists
-      .filter(list => 
-        list.toLowerCase().includes(newList.toLowerCase()) && 
-        !selectedLists.includes(list)
-      )
-      .slice(0, 5);
-    
-    // Combiner avec les thèmes récents si pertinent
-    const recentMatches = recentlyUsedLists
-      .filter(list => 
-        list.toLowerCase().includes(newList.toLowerCase()) && 
-        !selectedLists.includes(list)
-      );
-    
-    return [...recentMatches, ...searchResults]
-      .filter((list, index, self) => self.indexOf(list) === index)
-      .slice(0, 5);
-  }, [newList, availableLists, selectedLists, recentlyUsedLists]);
-
-  const handleClickOutside = useCallback((event: MouseEvent) => {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.tag-input-container')) {
-      setShowTagSuggestions(false);
-      setShowListSuggestions(false);
-    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [handleClickOutside]);
-
-  const handleAddTag = (tagName: string) => {
-    if (!tagName.trim()) return;
-    
-    const existingTag = availableTags.find(
-      tag => tag.toLowerCase() === tagName.toLowerCase()
-    );
-    const finalTag = existingTag || tagName;
-    
-    if (!selectedTags.includes(finalTag)) {
-      onTagsChange([...selectedTags, finalTag]);
+  // Fonction pour ajouter un nouveau tag personnalisé
+  const handleAddCustomTag = () => {
+    if (newTag.trim()) {
+      onTagsChange([...selectedTags, newTag.trim()]);
+      setNewTag('');
+      setShowTagSuggestions(false);
     }
-    
-    setNewTag('');
-    setShowTagSuggestions(false);
   };
 
-  const handleAddList = (listName: string) => {
-    if (!listName.trim()) return;
-    
-    const existingList = availableLists.find(
-      list => list.toLowerCase() === listName.toLowerCase()
-    );
-    const finalList = existingList || listName;
-    
-    if (!selectedLists.includes(finalList)) {
-      onListsChange([...selectedLists, finalList]);
+  // Fonction pour ajouter un nouveau thème personnalisé
+  const handleAddCustomList = () => {
+    if (newList.trim()) {
+      onListsChange([...selectedLists, newList.trim()]);
+      setNewList('');
+      setShowListSuggestions(false);
     }
+  };
+
+  // Récupération des tags récents (hors tags par défaut)
+  const recentCustomTags = useMemo(() => {
+    console.log('Available tags:', availableTags);
+    console.log('Selected tags:', selectedTags);
+    console.log('DEFAULT_TAG_SUGGESTIONS:', DEFAULT_TAG_SUGGESTIONS);
     
-    setNewList('');
-    setShowListSuggestions(false);
-  };
+    const filteredTags = availableTags
+      .filter(tag => !DEFAULT_TAG_SUGGESTIONS.some(defaultTag => defaultTag.name === tag))
+      .filter(tag => !selectedTags.includes(tag))
+      .slice(0, 5);  // Prendre les 5 premiers (les plus récents)
+      
+    console.log('Filtered recent tags:', filteredTags);
+    return filteredTags;
+  }, [availableTags, selectedTags]);
 
-  const handleRemoveTag = (tag: string) => {
-    onTagsChange(selectedTags.filter(t => t !== tag));
-  };
+  // Récupération des thèmes récents
+  const recentLists = useMemo(() => {
+    console.log('Available lists:', availableLists);
+    console.log('Selected lists:', selectedLists);
+    
+    const filteredLists = availableLists
+      .filter(list => !selectedLists.includes(list))
+      .slice(0, 5);  // Prendre les 5 premiers (les plus récents)
+      
+    console.log('Filtered recent lists:', filteredLists);
+    return filteredLists;
+  }, [availableLists, selectedLists]);
 
-  const handleRemoveList = (list: string) => {
-    onListsChange(selectedLists.filter(l => l !== list));
-  };
+  // Suggestions de tags incluant les tags par défaut et l'autocomplétion
+  const tagSuggestions = useMemo(() => {
+    const defaultTags = DEFAULT_TAG_SUGGESTIONS
+      .filter(tag => !selectedTags.includes(tag.name))
+      .map(tag => ({
+        ...tag,
+        isDefault: true
+      }));
 
-  // Modifions d'abord la logique pour déterminer la couleur du tag
+    if (!newTag.trim()) return defaultTags;
+
+    const searchTerm = newTag.toLowerCase();
+    const customTags = availableTags
+      .filter(tag => 
+        tag.toLowerCase().includes(searchTerm) && 
+        !selectedTags.includes(tag) &&
+        !DEFAULT_TAG_SUGGESTIONS.some(dt => dt.name === tag)
+      )
+      .map(tag => ({
+        name: tag,
+        color: 'bg-pink-100 text-pink-800 hover:bg-pink-200 border border-pink-200',
+        isDefault: false
+      }));
+
+    return [...defaultTags, ...customTags].slice(0, 10);
+  }, [newTag, availableTags, selectedTags]);
+
+  // Suggestions de thèmes
+  const listSuggestions = useMemo(() => {
+    if (!newList.trim()) return [];
+    
+    const searchTerm = newList.toLowerCase();
+    return availableLists
+      .filter(list => 
+        list.toLowerCase().includes(searchTerm) && 
+        !selectedLists.includes(list)
+      )
+      .slice(0, 5);
+  }, [newList, availableLists, selectedLists]);
+
   const getTagStyle = (tagName: string) => {
     const defaultTag = DEFAULT_TAG_SUGGESTIONS.find(t => t.name === tagName);
     return defaultTag?.color || 'bg-pink-100 text-pink-800 hover:bg-pink-200 border border-pink-200';
@@ -189,27 +142,19 @@ export const TagsManager: React.FC<TagsManagerProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Tags Section */}
+      {/* Section Tags */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Tag className="w-4 h-4" />
-          <h3 className="text-sm font-medium">Tags</h3>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mb-2">
+        {/* Tags sélectionnés */}
+        <div className="flex flex-wrap gap-1.5 mb-2">
           {selectedTags.map((tag) => (
             <span
               key={tag}
-              className={`inline-flex items-center text-sm h-6 px-2 rounded-md ${getTagStyle(tag)}`}
+              className={`inline-flex items-center text-xs px-1.5 py-0.5 rounded-md ${getTagStyle(tag)}`}
             >
               {tag}
               <button
-                onClick={() => handleRemoveTag(tag)}
-                className={`ml-1 ${
-                  DEFAULT_TAG_SUGGESTIONS.find(t => t.name === tag) 
-                    ? 'text-gray-500 hover:text-gray-700'
-                    : 'text-pink-500 hover:text-pink-700'
-                }`}
+                onClick={() => onTagsChange(selectedTags.filter(t => t !== tag))}
+                className="ml-1 text-gray-500 hover:text-gray-700"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -217,86 +162,88 @@ export const TagsManager: React.FC<TagsManagerProps> = ({
           ))}
         </div>
 
+        {/* Input de tag avec suggestions */}
         <div className="relative tag-input-container">
           <div className="flex gap-2">
             <input
               type="text"
               value={newTag}
-              onChange={(e) => {
-                setNewTag(e.target.value);
-                setShowTagSuggestions(true);
-              }}
+              onChange={(e) => setNewTag(e.target.value)}
               onFocus={() => setShowTagSuggestions(true)}
               placeholder="Ajouter un tag..."
               className="flex-1 px-3 py-1 text-sm border rounded-md"
-              onKeyPress={(e) => e.key === 'Enter' && handleAddTag(newTag)}
             />
             <button
-              type="button"
-              onClick={() => handleAddTag(newTag)}
-              className="px-3 py-1 text-sm bg-gray-100 rounded-md hover:bg-gray-200"
+              onClick={() => {
+                if (newTag.trim()) {
+                  onTagsChange([...selectedTags, newTag.trim()]);
+                  setNewTag('');
+                }
+              }}
+              className="px-2 py-1 text-sm bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100"
             >
               <Plus className="w-4 h-4" />
             </button>
           </div>
 
-          {showTagSuggestions && filteredTagSuggestions.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
-              {filteredTagSuggestions.map((tagName) => {
-                const defaultTag = DEFAULT_TAG_SUGGESTIONS.find(t => t.name === tagName);
-                return (
-                  <button
-                    key={tagName}
-                    className={`w-full px-3 py-2 text-left text-sm ${
-                      defaultTag ? defaultTag.color : 'bg-pink-100 text-pink-800 hover:bg-pink-200 border border-pink-200'
-                    }`}
-                    onClick={() => handleAddTag(tagName)}
-                  >
-                    {tagName}
-                  </button>
-                );
-              })}
+          {/* Liste des suggestions */}
+          {showTagSuggestions && (
+            <div 
+              className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg"
+              onMouseLeave={() => setShowTagSuggestions(false)}
+            >
+              {tagSuggestions.map((tag) => (
+                <button
+                  key={tag.name}
+                  className={`w-full px-3 py-1.5 text-left text-xs ${tag.color}`}
+                  onClick={() => {
+                    onTagsChange([...selectedTags, tag.name]);
+                    setNewTag('');
+                    setShowTagSuggestions(false);
+                  }}
+                >
+                  {tag.name}
+                </button>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Affichage des tags récents si présents */}
-        {recentlyUsedTags.length > 0 && (
+        {/* Tags récents */}
+        {recentCustomTags.length > 0 && (
           <div className="mt-2">
             <p className="text-xs text-gray-500 mb-1">Tags récents :</p>
             <div className="flex flex-wrap gap-1">
-              {recentlyUsedTags
-                .filter(tag => !selectedTags.includes(tag))
-                .map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => handleAddTag(tag)}
-                    className={`inline-flex items-center text-sm h-6 px-2 rounded-md ${getTagStyle(tag)}`}
-                  >
-                    {tag}
-                  </button>
-                ))}
+              {recentCustomTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => {
+                    onTagsChange([...selectedTags, tag]);
+                    setNewTag('');
+                  }}
+                  className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-pink-100 text-pink-800 hover:bg-pink-200"
+                >
+                  <Tag className="w-3 h-3" />
+                  {tag}
+                </button>
+              ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* Lists Section */}
+      {/* Section Thèmes */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <List className="w-4 h-4" />
-          <h3 className="text-sm font-medium">Thèmes</h3>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mb-2">
+        {/* Thèmes sélectionnés */}
+        <div className="flex flex-wrap gap-1.5 mb-2">
           {selectedLists.map((list) => (
             <span
               key={list}
-              className="inline-flex items-center text-sm h-6 px-2 rounded-md bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200"
+              className="inline-flex items-center text-xs px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-800"
             >
               {list}
               <button
-                onClick={() => handleRemoveList(list)}
+                onClick={() => onListsChange(selectedLists.filter(l => l !== list))}
                 className="ml-1 text-blue-500 hover:text-blue-700"
               >
                 <X className="w-3 h-3" />
@@ -305,36 +252,45 @@ export const TagsManager: React.FC<TagsManagerProps> = ({
           ))}
         </div>
 
+        {/* Input de thème avec autocomplétion */}
         <div className="relative list-input-container">
           <div className="flex gap-2">
             <input
               type="text"
               value={newList}
-              onChange={(e) => {
-                setNewList(e.target.value);
-                setShowListSuggestions(true);
-              }}
+              onChange={(e) => setNewList(e.target.value)}
               onFocus={() => setShowListSuggestions(true)}
               placeholder="Ajouter un thème..."
               className="flex-1 px-3 py-1 text-sm border rounded-md"
-              onKeyPress={(e) => e.key === 'Enter' && handleAddList(newList)}
             />
             <button
-              type="button"
-              onClick={() => handleAddList(newList)}
-              className="px-3 py-1 text-sm bg-gray-100 rounded-md hover:bg-gray-200"
+              onClick={() => {
+                if (newList.trim()) {
+                  onListsChange([...selectedLists, newList.trim()]);
+                  setNewList('');
+                }
+              }}
+              className="px-2 py-1 text-sm bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100"
             >
               <Plus className="w-4 h-4" />
             </button>
           </div>
 
-          {showListSuggestions && filteredListSuggestions.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
-              {filteredListSuggestions.map((list) => (
+          {/* Liste d'autocomplétion des thèmes */}
+          {showListSuggestions && listSuggestions.length > 0 && (
+            <div 
+              className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg"
+              onMouseLeave={() => setShowListSuggestions(false)}
+            >
+              {listSuggestions.map((list) => (
                 <button
                   key={list}
-                  className="w-full px-3 py-2 text-left text-sm bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200"
-                  onClick={() => handleAddList(list)}
+                  className="w-full px-3 py-1.5 text-left text-xs bg-blue-50 text-blue-800 hover:bg-blue-100"
+                  onClick={() => {
+                    onListsChange([...selectedLists, list]);
+                    setNewList('');
+                    setShowListSuggestions(false);
+                  }}
                 >
                   {list}
                 </button>
@@ -343,17 +299,21 @@ export const TagsManager: React.FC<TagsManagerProps> = ({
           )}
         </div>
 
-        {/* Affichage des thèmes récents */}
-        {availableRecentLists.length > 0 && (
+        {/* Thèmes récents */}
+        {recentLists.length > 0 && (
           <div className="mt-2">
             <p className="text-xs text-gray-500 mb-1">Thèmes récents :</p>
             <div className="flex flex-wrap gap-1">
-              {availableRecentLists.map((list) => (
+              {recentLists.map((list) => (
                 <button
                   key={list}
-                  onClick={() => handleAddList(list)}
-                  className="inline-flex items-center text-sm h-6 px-2 rounded-md bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200"
+                  onClick={() => {
+                    onListsChange([...selectedLists, list]);
+                    setNewList('');
+                  }}
+                  className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-blue-50 text-blue-800 hover:bg-blue-100"
                 >
+                  <List className="w-3 h-3" />
                   {list}
                 </button>
               ))}
@@ -364,6 +324,16 @@ export const TagsManager: React.FC<TagsManagerProps> = ({
     </div>
   );
 }; 
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -64,6 +64,7 @@ export function Header() {
             <NavItem path="/add" text="Add Word" icon="crayon.png" />
             <NavItem path="/list" text="Word List" icon="word list.png" />
             <NavItem path="/practice" text="Practice" icon="molecule.png" />
+            <NavItem path="/api-test" text="Test API" icon="dashboard.png" /> {/* Ajout du Test API */}
           </div>
         </nav>
 
@@ -84,4 +85,6 @@ export function Header() {
     </header>
   );
 }
+
+
 

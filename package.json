@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "frontend": "vite",
     "build": "vite build",
     "vercel-build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "api": "vercel dev --listen 3000"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.7",
@@ -44,6 +44,11 @@
     "vite": "^5.1.4"
   }
 }
+
+
+
+
+
 
 
 
